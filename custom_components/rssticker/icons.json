@@ -1,0 +1,12 @@
+{
+  "entity": {
+    "sensor": {
+      "ticker": {
+        "default": "mdi:rss",
+        "state": {
+          "0": "mdi:rss-off"
+        }
+      }
+    }
+  }
+}

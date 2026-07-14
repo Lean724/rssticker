@@ -1,0 +1,27 @@
+[project]
+name = "rssticker"
+version = "0.1.0"
+description = "RSS Ticker — integración de Home Assistant para mostrar News Tickers desde fuentes RSS/Atom/RDF"
+requires-python = ">=3.12"
+license = { text = "MIT" }
+
+[tool.ruff]
+target-version = "py312"
+line-length = 88
+
+[tool.ruff.lint]
+select = [
+  "E", "F", "W",   # pycodestyle / pyflakes
+  "I",             # isort
+  "UP",            # pyupgrade
+  "B",             # bugbear
+  "SIM",           # simplify
+  "ASYNC",         # async lint rules de Home Assistant
+]
+ignore = ["E501"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["custom_components.rssticker"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"

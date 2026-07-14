@@ -1,0 +1,41 @@
+refresh:
+  name: Actualizar RSS
+  description: Fuerza la actualización de todos los feeds de una entrada de RSS Ticker (o de todas si no se especifica).
+  fields:
+    config_entry_id:
+      name: Entrada de configuración
+      description: ID de la entrada de configuración a actualizar. Si se omite, se actualizan todas.
+      required: false
+      selector:
+        config_entry:
+          integration: rssticker
+
+refresh_ticker:
+  name: Actualizar un ticker
+  description: Fuerza la actualización de los feeds usados por un ticker específico.
+  fields:
+    ticker_id:
+      name: Ticker
+      description: Identificador del ticker a actualizar.
+      required: true
+      selector:
+        text:
+    config_entry_id:
+      name: Entrada de configuración
+      description: ID de la entrada de configuración. Si se omite, se busca en todas.
+      required: false
+      selector:
+        config_entry:
+          integration: rssticker
+
+clear_cache:
+  name: Vaciar caché
+  description: Elimina la caché en memoria de los feeds y fuerza una nueva descarga completa.
+  fields:
+    config_entry_id:
+      name: Entrada de configuración
+      description: ID de la entrada de configuración. Si se omite, se aplica a todas.
+      required: false
+      selector:
+        config_entry:
+          integration: rssticker

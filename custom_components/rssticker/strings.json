@@ -1,0 +1,161 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Set up RSS Ticker",
+        "description": "Initial setup. Feeds and tickers are added afterwards from Options.",
+        "data": {
+          "name": "Name",
+          "update_interval": "Update interval",
+          "timezone": "Time zone (optional, uses Home Assistant's if left empty)",
+          "language": "Language"
+        }
+      }
+    },
+    "abort": {
+      "already_configured": "An RSS Ticker entry with that name already exists."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "RSS Ticker",
+        "menu_options": {
+          "settings": "General settings",
+          "manage_feeds": "Manage RSS feeds",
+          "manage_tickers": "Manage tickers"
+        }
+      },
+      "settings": {
+        "title": "General settings",
+        "data": {
+          "update_interval": "Update interval",
+          "timezone": "Time zone",
+          "language": "Language"
+        }
+      },
+      "manage_feeds": {
+        "title": "Manage RSS feeds",
+        "menu_options": {
+          "add_feed": "Add feed",
+          "edit_feed": "Edit feed",
+          "delete_feed": "Delete feed",
+          "duplicate_feed": "Duplicate feed",
+          "test_feed": "Test feed",
+          "init": "Back"
+        }
+      },
+      "add_feed": {
+        "title": "Add RSS feed",
+        "data": {
+          "name": "Name",
+          "url": "Feed URL",
+          "category": "Category",
+          "priority": "Priority",
+          "order": "Order",
+          "color": "Color (optional, e.g. #ff0000)",
+          "active": "Active"
+        }
+      },
+      "edit_feed": {
+        "title": "Choose the feed to edit",
+        "data": { "feed_id": "Feed" }
+      },
+      "edit_feed_form": {
+        "title": "Edit RSS feed",
+        "data": {
+          "name": "Name",
+          "url": "Feed URL",
+          "category": "Category",
+          "priority": "Priority",
+          "order": "Order",
+          "color": "Color (optional, e.g. #ff0000)",
+          "active": "Active"
+        }
+      },
+      "delete_feed": {
+        "title": "Choose the feed to delete",
+        "data": { "feed_id": "Feed" }
+      },
+      "duplicate_feed": {
+        "title": "Choose the feed to duplicate",
+        "data": { "feed_id": "Feed" }
+      },
+      "test_feed": {
+        "title": "Choose the feed to test",
+        "data": { "feed_id": "Feed" }
+      },
+      "test_feed_result": {
+        "title": "Test result",
+        "description": "News found: {count}\nResponse time: {response_time} ms\nLast update: {last_update}\nErrors: {error}"
+      },
+      "manage_tickers": {
+        "title": "Manage tickers",
+        "menu_options": {
+          "add_ticker": "Add ticker",
+          "edit_ticker": "Edit ticker",
+          "delete_ticker": "Delete ticker",
+          "init": "Back"
+        }
+      },
+      "add_ticker": {
+        "title": "Add ticker",
+        "data": {
+          "name": "Name",
+          "title": "Fixed title (optional)",
+          "feed_ids": "Included RSS feeds",
+          "content_mode": "Content to show",
+          "sort": "Sorting",
+          "dedup_by": "Remove duplicates comparing",
+          "max_items": "Maximum number of news items",
+          "max_length": "Maximum title length (0 = no limit)",
+          "include_words": "Only include if it contains (comma separated)",
+          "exclude_words": "Exclude if it contains (comma separated)",
+          "exclude_domains": "Exclude domains (comma separated)",
+          "exclude_categories": "Exclude categories (comma separated)",
+          "exclude_sources": "Exclude sources (comma separated)"
+        }
+      },
+      "edit_ticker": {
+        "title": "Choose the ticker to edit",
+        "data": { "ticker_id": "Ticker" }
+      },
+      "edit_ticker_form": {
+        "title": "Edit ticker",
+        "data": {
+          "name": "Name",
+          "title": "Fixed title (optional)",
+          "feed_ids": "Included RSS feeds",
+          "content_mode": "Content to show",
+          "sort": "Sorting",
+          "dedup_by": "Remove duplicates comparing",
+          "max_items": "Maximum number of news items",
+          "max_length": "Maximum title length (0 = no limit)",
+          "include_words": "Only include if it contains (comma separated)",
+          "exclude_words": "Exclude if it contains (comma separated)",
+          "exclude_domains": "Exclude domains (comma separated)",
+          "exclude_categories": "Exclude categories (comma separated)",
+          "exclude_sources": "Exclude sources (comma separated)"
+        }
+      },
+      "delete_ticker": {
+        "title": "Choose the ticker to delete",
+        "data": { "ticker_id": "Ticker" }
+      }
+    }
+  },
+  "services": {
+    "refresh": {
+      "name": "Refresh RSS",
+      "description": "Forces an update of all feeds."
+    },
+    "refresh_ticker": {
+      "name": "Refresh a ticker",
+      "description": "Forces an update of the feeds used by a specific ticker."
+    },
+    "clear_cache": {
+      "name": "Clear cache",
+      "description": "Clears the in-memory cache and forces a full re-download."
+    }
+  }
+}

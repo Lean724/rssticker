@@ -1,0 +1,161 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Configurar RSS Ticker",
+        "description": "Configuración inicial. Los feeds y tickers se agregan luego desde Opciones.",
+        "data": {
+          "name": "Nombre",
+          "update_interval": "Intervalo de actualización",
+          "timezone": "Zona horaria (opcional, usa la de Home Assistant si se deja vacío)",
+          "language": "Idioma"
+        }
+      }
+    },
+    "abort": {
+      "already_configured": "Ya existe una entrada de RSS Ticker con ese nombre."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "RSS Ticker",
+        "menu_options": {
+          "settings": "Configuración general",
+          "manage_feeds": "Gestionar fuentes RSS",
+          "manage_tickers": "Gestionar tickers"
+        }
+      },
+      "settings": {
+        "title": "Configuración general",
+        "data": {
+          "update_interval": "Intervalo de actualización",
+          "timezone": "Zona horaria",
+          "language": "Idioma"
+        }
+      },
+      "manage_feeds": {
+        "title": "Gestionar fuentes RSS",
+        "menu_options": {
+          "add_feed": "Agregar fuente",
+          "edit_feed": "Editar fuente",
+          "delete_feed": "Eliminar fuente",
+          "duplicate_feed": "Duplicar fuente",
+          "test_feed": "Probar fuente",
+          "init": "Volver"
+        }
+      },
+      "add_feed": {
+        "title": "Agregar fuente RSS",
+        "data": {
+          "name": "Nombre",
+          "url": "URL del feed",
+          "category": "Categoría",
+          "priority": "Prioridad",
+          "order": "Orden",
+          "color": "Color (opcional, ej. #ff0000)",
+          "active": "Activo"
+        }
+      },
+      "edit_feed": {
+        "title": "Elegí la fuente a editar",
+        "data": { "feed_id": "Fuente" }
+      },
+      "edit_feed_form": {
+        "title": "Editar fuente RSS",
+        "data": {
+          "name": "Nombre",
+          "url": "URL del feed",
+          "category": "Categoría",
+          "priority": "Prioridad",
+          "order": "Orden",
+          "color": "Color (opcional, ej. #ff0000)",
+          "active": "Activo"
+        }
+      },
+      "delete_feed": {
+        "title": "Elegí la fuente a eliminar",
+        "data": { "feed_id": "Fuente" }
+      },
+      "duplicate_feed": {
+        "title": "Elegí la fuente a duplicar",
+        "data": { "feed_id": "Fuente" }
+      },
+      "test_feed": {
+        "title": "Elegí la fuente a probar",
+        "data": { "feed_id": "Fuente" }
+      },
+      "test_feed_result": {
+        "title": "Resultado de la prueba",
+        "description": "Noticias encontradas: {count}\nTiempo de respuesta: {response_time} ms\nÚltima actualización: {last_update}\nErrores: {error}"
+      },
+      "manage_tickers": {
+        "title": "Gestionar tickers",
+        "menu_options": {
+          "add_ticker": "Agregar ticker",
+          "edit_ticker": "Editar ticker",
+          "delete_ticker": "Eliminar ticker",
+          "init": "Volver"
+        }
+      },
+      "add_ticker": {
+        "title": "Agregar ticker",
+        "data": {
+          "name": "Nombre",
+          "title": "Título fijo (opcional)",
+          "feed_ids": "Fuentes RSS incluidas",
+          "content_mode": "Contenido a mostrar",
+          "sort": "Ordenamiento",
+          "dedup_by": "Eliminar duplicados comparando",
+          "max_items": "Cantidad máxima de noticias",
+          "max_length": "Longitud máxima de título (0 = sin límite)",
+          "include_words": "Incluir solo si contiene (separadas por coma)",
+          "exclude_words": "Excluir si contiene (separadas por coma)",
+          "exclude_domains": "Excluir dominios (separados por coma)",
+          "exclude_categories": "Excluir categorías (separadas por coma)",
+          "exclude_sources": "Excluir fuentes (separadas por coma)"
+        }
+      },
+      "edit_ticker": {
+        "title": "Elegí el ticker a editar",
+        "data": { "ticker_id": "Ticker" }
+      },
+      "edit_ticker_form": {
+        "title": "Editar ticker",
+        "data": {
+          "name": "Nombre",
+          "title": "Título fijo (opcional)",
+          "feed_ids": "Fuentes RSS incluidas",
+          "content_mode": "Contenido a mostrar",
+          "sort": "Ordenamiento",
+          "dedup_by": "Eliminar duplicados comparando",
+          "max_items": "Cantidad máxima de noticias",
+          "max_length": "Longitud máxima de título (0 = sin límite)",
+          "include_words": "Incluir solo si contiene (separadas por coma)",
+          "exclude_words": "Excluir si contiene (separadas por coma)",
+          "exclude_domains": "Excluir dominios (separados por coma)",
+          "exclude_categories": "Excluir categorías (separadas por coma)",
+          "exclude_sources": "Excluir fuentes (separadas por coma)"
+        }
+      },
+      "delete_ticker": {
+        "title": "Elegí el ticker a eliminar",
+        "data": { "ticker_id": "Ticker" }
+      }
+    }
+  },
+  "services": {
+    "refresh": {
+      "name": "Actualizar RSS",
+      "description": "Fuerza la actualización de todos los feeds."
+    },
+    "refresh_ticker": {
+      "name": "Actualizar un ticker",
+      "description": "Fuerza la actualización de los feeds de un ticker específico."
+    },
+    "clear_cache": {
+      "name": "Vaciar caché",
+      "description": "Elimina la caché en memoria y fuerza una nueva descarga."
+    }
+  }
+}
