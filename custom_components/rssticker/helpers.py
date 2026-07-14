@@ -4,7 +4,7 @@ from __future__ import annotations
 import logging
 import random
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 from urllib.parse import urlparse
 
@@ -74,7 +74,7 @@ async def async_fetch_feed(
     """Descarga y parsea un único feed RSS/Atom/RDF."""
     feed_id = feed_conf["id"]
     url = feed_conf["url"]
-    start = datetime.now(timezone.utc)
+    start = datetime.now(UTC)
     try:
         timeout = aiohttp.ClientTimeout(total=FEED_TIMEOUT)
         async with session.get(
@@ -86,7 +86,7 @@ async def async_fetch_feed(
         _LOGGER.debug("Error descargando feed %s (%s): %s", feed_id, url, err)
         return FeedFetchResult(feed_id=feed_id, ok=False, error=str(err))
 
-    elapsed_ms = int((datetime.now(timezone.utc) - start).total_seconds() * 1000)
+    elapsed_ms = int((datetime.now(UTC) - start).total_seconds() * 1000)
 
     parsed = feedparser.parse(raw)
     if parsed.bozo and not parsed.entries:
@@ -135,7 +135,7 @@ async def async_fetch_feed(
         ok=True,
         items=items,
         response_time_ms=elapsed_ms,
-        fetched_at=datetime.now(timezone.utc),
+        fetched_at=datetime.now(UTC),
     )
 
 
@@ -145,7 +145,7 @@ def _parse_published(entry: Any) -> datetime | None:
         struct = entry.get(key)
         if struct:
             try:
-                return datetime(*struct[:6], tzinfo=timezone.utc)
+                return datetime(*struct[:6], tzinfo=UTC)
             except (TypeError, ValueError):
                 continue
     return None
@@ -228,7 +228,7 @@ def _sort_items(items: list[FeedItem], sort: str | None) -> list[FeedItem]:
         return shuffled
 
     def sort_key(item: FeedItem) -> datetime:
-        return item.published or datetime.min.replace(tzinfo=timezone.utc)
+        return item.published or datetime.min.replace(tzinfo=UTC)
 
     reverse = sort != SORT_OLDEST
     return sorted(items, key=sort_key, reverse=reverse)

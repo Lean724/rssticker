@@ -3,7 +3,7 @@
   "name": "RSS Ticker",
   "codeowners": ["@Lean724"],
   "config_flow": true,
-  "dependencies": [],
+  "dependencies": ["http", "frontend"],
   "documentation": "https://github.com/Lean724/rssticker",
   "integration_type": "hub",
   "iot_class": "cloud_polling",

@@ -83,7 +83,10 @@ def _update_interval_selector() -> selector.SelectSelector:
 def _language_selector() -> selector.SelectSelector:
     return selector.SelectSelector(
         selector.SelectSelectorConfig(
-            options=[selector.SelectOptionDict(value=l, label=l) for l in LANGUAGES],
+            options=[
+                selector.SelectOptionDict(value=lang, label=lang)
+                for lang in LANGUAGES
+            ],
             mode=selector.SelectSelectorMode.DROPDOWN,
         )
     )
