@@ -6,7 +6,7 @@ from pathlib import Path
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers.http import StaticPathConfig
+from homeassistant.components.http import StaticPathConfig
 
 from .const import CARD_NAME, CARD_URL, DOMAIN, PLATFORMS
 from .coordinator import RssTickerCoordinator
