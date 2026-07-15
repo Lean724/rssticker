@@ -135,9 +135,9 @@ rssticker/
 │       ├── services.yaml
 │       ├── translations/
 │       ├── icons.json
-│       └── strings.json
-├── www/
-│   └── rssticker-card.js
+│       ├── strings.json
+│       └── www/
+│           └── rssticker-card.js
 ├── tests/
 ├── .github/workflows/
 ├── hacs.json

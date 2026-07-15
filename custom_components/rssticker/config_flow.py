@@ -266,8 +266,8 @@ class RssTickerOptionsFlow(OptionsFlow):
                     FEED_NAME: user_input[FEED_NAME],
                     FEED_URL: user_input[FEED_URL],
                     FEED_CATEGORY: user_input.get(FEED_CATEGORY, ""),
-                    FEED_PRIORITY: user_input.get(FEED_PRIORITY, 0),
-                    FEED_ORDER: user_input.get(FEED_ORDER, 0),
+                    FEED_PRIORITY: int(user_input.get(FEED_PRIORITY, 0)),
+                    FEED_ORDER: int(user_input.get(FEED_ORDER, 0)),
                     FEED_COLOR: user_input.get(FEED_COLOR, ""),
                     FEED_ACTIVE: user_input.get(FEED_ACTIVE, True),
                 }
@@ -318,8 +318,8 @@ class RssTickerOptionsFlow(OptionsFlow):
                     FEED_NAME: user_input[FEED_NAME],
                     FEED_URL: user_input[FEED_URL],
                     FEED_CATEGORY: user_input.get(FEED_CATEGORY, ""),
-                    FEED_PRIORITY: user_input.get(FEED_PRIORITY, 0),
-                    FEED_ORDER: user_input.get(FEED_ORDER, 0),
+                    FEED_PRIORITY: int(user_input.get(FEED_PRIORITY, 0)),
+                    FEED_ORDER: int(user_input.get(FEED_ORDER, 0)),
                     FEED_COLOR: user_input.get(FEED_COLOR, ""),
                     FEED_ACTIVE: user_input.get(FEED_ACTIVE, True),
                 }
@@ -507,8 +507,10 @@ class RssTickerOptionsFlow(OptionsFlow):
             TICKER_CONTENT_MODE: user_input[TICKER_CONTENT_MODE],
             TICKER_SORT: user_input[TICKER_SORT],
             TICKER_DEDUP_BY: user_input[TICKER_DEDUP_BY],
-            TICKER_MAX_ITEMS: user_input.get(TICKER_MAX_ITEMS, DEFAULT_MAX_ITEMS),
-            TICKER_MAX_LENGTH: user_input.get(TICKER_MAX_LENGTH, DEFAULT_MAX_LENGTH),
+            TICKER_MAX_ITEMS: int(user_input.get(TICKER_MAX_ITEMS, DEFAULT_MAX_ITEMS)),
+            TICKER_MAX_LENGTH: int(
+                user_input.get(TICKER_MAX_LENGTH, DEFAULT_MAX_LENGTH)
+            ),
             TICKER_INCLUDE_WORDS: user_input.get(TICKER_INCLUDE_WORDS, ""),
             TICKER_EXCLUDE_WORDS: user_input.get(TICKER_EXCLUDE_WORDS, ""),
             TICKER_EXCLUDE_DOMAINS: user_input.get(TICKER_EXCLUDE_DOMAINS, ""),

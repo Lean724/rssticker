@@ -182,10 +182,12 @@ def filter_and_sort_items(
     filtered = _sort_items(filtered, ticker_conf.get("sort"))
 
     max_items = ticker_conf.get("max_items") or 0
+    max_items = int(max_items)
     if max_items:
         filtered = filtered[:max_items]
 
     max_length = ticker_conf.get("max_length") or 0
+    max_length = int(max_length)
     if max_length:
         for item in filtered:
             if len(item.title) > max_length:

@@ -62,7 +62,11 @@ async def _async_register_card(hass: HomeAssistant) -> None:
         return
 
     if not CARD_DIR.exists():
-        _LOGGER.debug("Directorio de la tarjeta no encontrado en %s", CARD_DIR)
+        _LOGGER.warning(
+            "No se encontró el directorio de la tarjeta en %s; la Lovelace Card "
+            "'rssticker-card' no estará disponible",
+            CARD_DIR,
+        )
         return
 
     await hass.http.async_register_static_paths(

@@ -131,3 +131,14 @@ def test_max_length_truncates_title():
     )
     assert len(result[0].title) == 10
     assert result[0].title.endswith("…")
+
+
+def test_max_items_and_max_length_accept_float():
+    """Regresión: los NumberSelector de HA devuelven float, no deben romper el slicing."""
+    items = [_item(f"Item numero {i} bastante largo", minutes_ago=i) for i in range(5)]
+    result = filter_and_sort_items(
+        items,
+        {"max_items": 3.0, "max_length": 8.0, "dedup_by": "none", "sort": "newest"},
+    )
+    assert len(result) == 3
+    assert all(len(i.title) == 8 for i in result)
