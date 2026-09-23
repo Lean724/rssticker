@@ -1,6 +1,7 @@
 """Funciones auxiliares para descargar, parsear y filtrar feeds RSS/Atom/RDF."""
 from __future__ import annotations
 
+import asyncio
 import logging
 import random
 from dataclasses import dataclass, field
@@ -88,7 +89,11 @@ async def async_fetch_feed(
 
     elapsed_ms = int((datetime.now(UTC) - start).total_seconds() * 1000)
 
-    parsed = feedparser.parse(raw)
+    # feedparser.parse() es una llamada bloqueante (hace su propia detección de
+    # tipo de entrada y, en algunos casos, operaciones de E/S), así que debe
+    # correr en un executor thread para no bloquear el event loop.
+    loop = asyncio.get_running_loop()
+    parsed = await loop.run_in_executor(None, feedparser.parse, raw)
     if parsed.bozo and not parsed.entries:
         error_msg = str(parsed.get("bozo_exception", "Formato de feed inválido"))
         _LOGGER.debug("Feed %s (%s) no pudo parsearse: %s", feed_id, url, error_msg)
