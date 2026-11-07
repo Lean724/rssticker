@@ -16,7 +16,7 @@ y este proyecto sigue [Semantic Versioning](https://semver.org/lang/es/).
 - `rssticker.refresh_ticker` ahora acepta tanto el `ticker_id` interno como el nombre del ticker o su `entity_id`.
 
 ### Corregido
-- Actualizada la dependencia `feedparser` a `6.0.12` para cumplir con la validación `hassfest` de Home Assistant.
+- Actualizada la dependencia `feedparser` a `>=6.0.12` para cumplir con la validación `hassfest` de Home Assistant.
 - Eliminadas las llamadas bloqueantes al sistema de archivos (`Path.exists()`, `Path.stat()`) en el event loop durante `_async_register_card`, ejecutándolas mediante `hass.async_add_executor_job`.
 - Evitada la mutación in-place de objetos `FeedItem` en caché al truncar títulos con `max_length`.
 - Corregida la descarga de servicios en `async_unload_entry` para que ignore banderas internas (`_card_registered`) al verificar si quedan instancias activas.

@@ -8,6 +8,6 @@
   "integration_type": "hub",
   "iot_class": "cloud_polling",
   "issue_tracker": "https://github.com/Lean724/rssticker/issues",
-  "requirements": ["feedparser==6.0.12"],
+  "requirements": ["feedparser>=6.0.12"],
   "version": "1.0.0"
 }
