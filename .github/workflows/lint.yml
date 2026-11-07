@@ -16,7 +16,7 @@ jobs:
       - name: Install ruff
         run: pip install ruff
       - name: Run ruff
-        run: ruff check custom_components/rssticker
+        run: ruff check custom_components tests
 
   pytest:
     runs-on: ubuntu-latest

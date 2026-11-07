@@ -5,6 +5,12 @@ Todos los cambios notables de este proyecto se documentan en este archivo.
 El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/),
 y este proyecto sigue [Semantic Versioning](https://semver.org/lang/es/).
 
+## [1.0.1] - 2026-11-07
+
+### Corregido
+- Corregidos errores de linting de Ruff (`E402`, `UP017`) en `tests/test_helpers.py` detectados por el nuevo workflow `Tests and lint` (`tests.yml`).
+- Unificado `lint.yml` para validar tanto `custom_components` como `tests`.
+
 ## [1.0.0] - 2026-11-07
 
 ### Agregado

@@ -1,6 +1,6 @@
 [project]
 name = "rssticker"
-version = "1.0.0"
+version = "1.0.1"
 description = "RSS Ticker — integración de Home Assistant para mostrar News Tickers desde fuentes RSS/Atom/RDF"
 requires-python = ">=3.12"
 license = { text = "MIT" }
