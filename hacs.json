@@ -1,7 +1,5 @@
 {
   "name": "RSS Ticker",
   "render_readme": true,
-  "content_in_root": false,
-  "homeassistant": "2024.6.0",
-  "zip_release": false
+  "homeassistant": "2024.6.0"
 }

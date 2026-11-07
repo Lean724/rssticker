@@ -52,6 +52,13 @@ class RssTickerCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         self._feed_cache: dict[str, list[FeedItem]] = {}
         self._feed_status: dict[str, dict[str, Any]] = {}
 
+    def update_polling_interval(self) -> None:
+        """Actualiza el intervalo de polling a partir de entry.data."""
+        interval_minutes = self.entry.data.get(CONF_UPDATE_INTERVAL, 10)
+        self.update_interval = (
+            timedelta(minutes=interval_minutes) if interval_minutes else None
+        )
+
     @property
     def feeds(self) -> list[dict[str, Any]]:
         return self.entry.options.get(CONF_FEEDS, self.entry.data.get(CONF_FEEDS, []))
@@ -86,8 +93,18 @@ class RssTickerCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         self.async_set_updated_data(self._build_result())
 
     async def async_refresh_ticker(self, ticker_id: str) -> None:
-        """Refresca únicamente los feeds usados por un ticker específico."""
-        ticker_conf = next((t for t in self.tickers if t[TICKER_ID] == ticker_id), None)
+        """Refresca únicamente los feeds usados por un ticker específico (por ID, nombre o entity_id)."""
+        needle = ticker_id.strip().lower()
+        ticker_conf = next(
+            (
+                t
+                for t in self.tickers
+                if t[TICKER_ID].lower() == needle
+                or t.get("name", "").strip().lower() == needle
+                or needle.endswith(f"_{t.get('name', '').strip().lower().replace(' ', '_')}")
+            ),
+            None,
+        )
         if ticker_conf is None:
             return
         feed_ids = set(ticker_conf.get(TICKER_FEED_IDS, []))
@@ -184,6 +201,7 @@ class RssTickerCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             tickers_result[ticker_id] = {
                 "name": ticker_conf.get("name", ticker_id),
                 "title": ticker_conf.get("title", ""),
+                "content_mode": ticker_conf.get("content_mode", "title_description"),
                 "items": [item.as_dict() for item in filtered_items],
                 "count": len(filtered_items),
                 "sources": sources,

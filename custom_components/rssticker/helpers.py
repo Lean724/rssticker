@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import asyncio
+import dataclasses
 import logging
 import random
 from dataclasses import dataclass, field
@@ -40,6 +41,8 @@ class FeedItem:
     category: str
     color: str | None
     domain: str
+    priority: int = 0
+    order: int = 0
 
     def as_dict(self) -> dict[str, Any]:
         return {
@@ -54,6 +57,8 @@ class FeedItem:
             "category": self.category,
             "color": self.color,
             "domain": self.domain,
+            "priority": self.priority,
+            "order": self.order,
         }
 
 
@@ -108,6 +113,8 @@ async def async_fetch_feed(
     source_name = feed_conf.get("name") or parsed.feed.get("title", domain)
     category = feed_conf.get("category", "")
     color = feed_conf.get("color") or None
+    priority = int(feed_conf.get("priority", 0))
+    order = int(feed_conf.get("order", 0))
 
     items: list[FeedItem] = []
     for entry in parsed.entries:
@@ -132,6 +139,8 @@ async def async_fetch_feed(
                 category=category,
                 color=color,
                 domain=urlparse(link).netloc if link else domain,
+                priority=priority,
+                order=order,
             )
         )
 
@@ -194,9 +203,13 @@ def filter_and_sort_items(
     max_length = ticker_conf.get("max_length") or 0
     max_length = int(max_length)
     if max_length:
+        truncated: list[FeedItem] = []
         for item in filtered:
             if len(item.title) > max_length:
-                item.title = item.title[: max_length - 1].rstrip() + "…"
+                new_title = item.title[: max_length - 1].rstrip() + "…"
+                item = dataclasses.replace(item, title=new_title)
+            truncated.append(item)
+        filtered = truncated
 
     return filtered
 
@@ -234,8 +247,18 @@ def _sort_items(items: list[FeedItem], sort: str | None) -> list[FeedItem]:
         random.shuffle(shuffled)
         return shuffled
 
-    def sort_key(item: FeedItem) -> datetime:
-        return item.published or datetime.min.replace(tzinfo=UTC)
+    default_dt = datetime.min.replace(tzinfo=UTC)
+    if sort == SORT_OLDEST:
+        return sorted(
+            items,
+            key=lambda i: (-i.priority, i.order, i.published or default_dt),
+        )
 
-    reverse = sort != SORT_OLDEST
-    return sorted(items, key=sort_key, reverse=reverse)
+    return sorted(
+        items,
+        key=lambda i: (
+            -i.priority,
+            i.order,
+            -(i.published or default_dt).timestamp(),
+        ),
+    )

@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import uuid
 from typing import Any
+from urllib.parse import urlparse
 
 import voluptuous as vol
 from homeassistant.config_entries import ConfigEntry, ConfigFlow, OptionsFlow
@@ -92,6 +93,14 @@ def _language_selector() -> selector.SelectSelector:
     )
 
 
+def _is_valid_url(url: str) -> bool:
+    try:
+        parsed = urlparse(url.strip())
+        return parsed.scheme in ("http", "https") and bool(parsed.netloc)
+    except ValueError:
+        return False
+
+
 class RssTickerConfigFlow(ConfigFlow, domain=DOMAIN):
     """Config flow inicial de RSS Ticker."""
 
@@ -175,7 +184,9 @@ class RssTickerOptionsFlow(OptionsFlow):
             {
                 vol.Required(
                     CONF_UPDATE_INTERVAL,
-                    default=str(entry.data.get(CONF_UPDATE_INTERVAL, DEFAULT_UPDATE_INTERVAL)),
+                    default=str(
+                        entry.data.get(CONF_UPDATE_INTERVAL, DEFAULT_UPDATE_INTERVAL)
+                    ),
                 ): _update_interval_selector(),
                 vol.Optional(
                     CONF_TIMEZONE, default=entry.data.get(CONF_TIMEZONE, "")
@@ -259,24 +270,30 @@ class RssTickerOptionsFlow(OptionsFlow):
     ) -> Any:
         errors: dict[str, str] = {}
         if user_input is not None:
-            feeds = self._feeds
-            feeds.append(
-                {
-                    FEED_ID: uuid.uuid4().hex,
-                    FEED_NAME: user_input[FEED_NAME],
-                    FEED_URL: user_input[FEED_URL],
-                    FEED_CATEGORY: user_input.get(FEED_CATEGORY, ""),
-                    FEED_PRIORITY: int(user_input.get(FEED_PRIORITY, 0)),
-                    FEED_ORDER: int(user_input.get(FEED_ORDER, 0)),
-                    FEED_COLOR: user_input.get(FEED_COLOR, ""),
-                    FEED_ACTIVE: user_input.get(FEED_ACTIVE, True),
-                }
-            )
-            self._save_feeds(feeds)
-            return await self.async_step_manage_feeds()
+            url = user_input[FEED_URL].strip()
+            if not _is_valid_url(url):
+                errors[FEED_URL] = "invalid_url"
+            else:
+                feeds = self._feeds
+                feeds.append(
+                    {
+                        FEED_ID: uuid.uuid4().hex,
+                        FEED_NAME: user_input[FEED_NAME].strip(),
+                        FEED_URL: url,
+                        FEED_CATEGORY: user_input.get(FEED_CATEGORY, "").strip(),
+                        FEED_PRIORITY: int(user_input.get(FEED_PRIORITY, 0)),
+                        FEED_ORDER: int(user_input.get(FEED_ORDER, 0)),
+                        FEED_COLOR: user_input.get(FEED_COLOR, "").strip(),
+                        FEED_ACTIVE: user_input.get(FEED_ACTIVE, True),
+                    }
+                )
+                self._save_feeds(feeds)
+                return await self.async_step_manage_feeds()
 
         return self.async_show_form(
-            step_id="add_feed", data_schema=self._feed_schema(), errors=errors
+            step_id="add_feed",
+            data_schema=self._feed_schema(user_input),
+            errors=errors,
         )
 
     def _feed_select_schema(self) -> vol.Schema:
@@ -312,23 +329,30 @@ class RssTickerOptionsFlow(OptionsFlow):
         if feed is None:
             return await self.async_step_manage_feeds()
 
+        errors: dict[str, str] = {}
         if user_input is not None:
-            feed.update(
-                {
-                    FEED_NAME: user_input[FEED_NAME],
-                    FEED_URL: user_input[FEED_URL],
-                    FEED_CATEGORY: user_input.get(FEED_CATEGORY, ""),
-                    FEED_PRIORITY: int(user_input.get(FEED_PRIORITY, 0)),
-                    FEED_ORDER: int(user_input.get(FEED_ORDER, 0)),
-                    FEED_COLOR: user_input.get(FEED_COLOR, ""),
-                    FEED_ACTIVE: user_input.get(FEED_ACTIVE, True),
-                }
-            )
-            self._save_feeds(feeds)
-            return await self.async_step_manage_feeds()
+            url = user_input[FEED_URL].strip()
+            if not _is_valid_url(url):
+                errors[FEED_URL] = "invalid_url"
+            else:
+                feed.update(
+                    {
+                        FEED_NAME: user_input[FEED_NAME].strip(),
+                        FEED_URL: url,
+                        FEED_CATEGORY: user_input.get(FEED_CATEGORY, "").strip(),
+                        FEED_PRIORITY: int(user_input.get(FEED_PRIORITY, 0)),
+                        FEED_ORDER: int(user_input.get(FEED_ORDER, 0)),
+                        FEED_COLOR: user_input.get(FEED_COLOR, "").strip(),
+                        FEED_ACTIVE: user_input.get(FEED_ACTIVE, True),
+                    }
+                )
+                self._save_feeds(feeds)
+                return await self.async_step_manage_feeds()
 
         return self.async_show_form(
-            step_id="edit_feed_form", data_schema=self._feed_schema(feed)
+            step_id="edit_feed_form",
+            data_schema=self._feed_schema(user_input or feed),
+            errors=errors,
         )
 
     async def async_step_delete_feed(
@@ -501,8 +525,8 @@ class RssTickerOptionsFlow(OptionsFlow):
 
     def _ticker_from_input(self, user_input: dict[str, Any]) -> dict[str, Any]:
         return {
-            TICKER_NAME: user_input[TICKER_NAME],
-            TICKER_TITLE: user_input.get(TICKER_TITLE, ""),
+            TICKER_NAME: user_input[TICKER_NAME].strip(),
+            TICKER_TITLE: user_input.get(TICKER_TITLE, "").strip(),
             TICKER_FEED_IDS: user_input.get(TICKER_FEED_IDS, []),
             TICKER_CONTENT_MODE: user_input[TICKER_CONTENT_MODE],
             TICKER_SORT: user_input[TICKER_SORT],
@@ -523,7 +547,10 @@ class RssTickerOptionsFlow(OptionsFlow):
     ) -> Any:
         if user_input is not None:
             tickers = self._tickers
-            new_ticker = {TICKER_ID: uuid.uuid4().hex, **self._ticker_from_input(user_input)}
+            new_ticker = {
+                TICKER_ID: uuid.uuid4().hex,
+                **self._ticker_from_input(user_input),
+            }
             tickers.append(new_ticker)
             self._save_tickers(tickers)
             return await self.async_step_manage_tickers()

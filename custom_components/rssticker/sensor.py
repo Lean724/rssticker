@@ -5,7 +5,8 @@ from typing import Any
 
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.core import HomeAssistant
+from homeassistant.core import HomeAssistant, callback
+from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
@@ -19,14 +20,38 @@ async def async_setup_entry(
     entry: ConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
-    """Crea un sensor por cada ticker definido en la entrada de configuración."""
+    """Crea y mantiene sincronizado un sensor por cada ticker de la entrada."""
     coordinator: RssTickerCoordinator = entry.runtime_data
+    known_ticker_ids: set[str] = set()
+    entities_by_id: dict[str, RssTickerSensor] = {}
 
-    entities = [
-        RssTickerSensor(coordinator, entry, ticker_conf[TICKER_ID])
-        for ticker_conf in coordinator.tickers
-    ]
-    async_add_entities(entities)
+    @callback
+    def _async_sync_entities() -> None:
+        current_ids = {t[TICKER_ID] for t in coordinator.tickers}
+
+        # Agregar sensores para tickers nuevos
+        new_ids = current_ids - known_ticker_ids
+        if new_ids:
+            new_entities: list[RssTickerSensor] = []
+            for tid in new_ids:
+                sensor = RssTickerSensor(coordinator, entry, tid)
+                entities_by_id[tid] = sensor
+                new_entities.append(sensor)
+            known_ticker_ids.update(new_ids)
+            async_add_entities(new_entities)
+
+        # Eliminar sensores de tickers borrados
+        removed_ids = known_ticker_ids - current_ids
+        if removed_ids:
+            ent_reg = er.async_get(hass)
+            for tid in removed_ids:
+                known_ticker_ids.discard(tid)
+                sensor = entities_by_id.pop(tid, None)
+                if sensor and sensor.entity_id:
+                    ent_reg.async_remove(sensor.entity_id)
+
+    _async_sync_entities()
+    entry.async_on_unload(coordinator.async_add_listener(_async_sync_entities))
 
 
 class RssTickerSensor(CoordinatorEntity[RssTickerCoordinator], SensorEntity):
@@ -34,7 +59,7 @@ class RssTickerSensor(CoordinatorEntity[RssTickerCoordinator], SensorEntity):
 
     _attr_has_entity_name = True
     _attr_icon = "mdi:rss"
-    _attr_native_unit_of_measurement = "noticias"
+    _attr_native_unit_of_measurement = "items"
 
     def __init__(
         self, coordinator: RssTickerCoordinator, entry: ConfigEntry, ticker_id: str
@@ -70,7 +95,9 @@ class RssTickerSensor(CoordinatorEntity[RssTickerCoordinator], SensorEntity):
     def extra_state_attributes(self) -> dict[str, Any]:
         data = self._ticker_data
         return {
+            "ticker_id": self._ticker_id,
             "title": data.get("title", ""),
+            "content_mode": data.get("content_mode", "title_description"),
             "items": data.get("items", []),
             "sources": data.get("sources", []),
             "status": data.get("status"),

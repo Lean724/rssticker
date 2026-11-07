@@ -26,6 +26,7 @@ class RssTickerCard extends HTMLElement {
       show_source: true,
       show_category: false,
       show_description: false,
+      open_links: true,
       separator: "  •  ",
       height: 40,
       font_size: 16,
@@ -59,6 +60,7 @@ class RssTickerCard extends HTMLElement {
       show_source: true,
       show_category: false,
       show_description: false,
+      open_links: true,
       separator: "  •  ",
       height: 40,
       font_size: 16,
@@ -73,7 +75,7 @@ class RssTickerCard extends HTMLElement {
     };
 
     this._currentIndex = 0;
-    this._lastRenderedText = null;
+    this._lastRenderedSignature = null;
 
     if (!this._hasRenderedShell) {
       this._buildShell();
@@ -154,6 +156,16 @@ class RssTickerCard extends HTMLElement {
         }
         .pause-on-hover:hover .rssticker-track {
           animation-play-state: paused;
+        }
+        .rssticker-item-link {
+          color: inherit;
+          text-decoration: none;
+        }
+        .rssticker-item-link:hover {
+          text-decoration: underline;
+        }
+        .rssticker-sep {
+          opacity: 0.7;
         }
         @keyframes rssticker-scroll {
           from { transform: translateX(0); }
@@ -236,7 +248,7 @@ class RssTickerCard extends HTMLElement {
     return this._resolveEntityId(refs[0]);
   }
 
-  _formatItem(item) {
+  _formatItemText(item, contentMode) {
     const cfg = this._config;
     const parts = [];
     const lang = (this._hass && this._hass.locale && this._hass.locale.language) || "es";
@@ -265,7 +277,9 @@ class RssTickerCard extends HTMLElement {
 
     if (cfg.show_description && item.description) {
       parts.push(`— ${item.description}`);
-    } else if (cfg.content === "title_content" && item.content) {
+    } else if (cfg.show_description !== false && contentMode === "title_description" && !cfg.content && item.description) {
+      parts.push(`— ${item.description}`);
+    } else if ((cfg.content === "title_content" || (!cfg.content && contentMode === "title_content")) && item.content) {
       parts.push(`— ${item.content}`);
     }
 
@@ -274,6 +288,37 @@ class RssTickerCard extends HTMLElement {
     }
 
     return parts.join(" ");
+  }
+
+  _buildItemsFragment(items, sep, contentMode) {
+    const cfg = this._config;
+    const frag = document.createDocumentFragment();
+    items.forEach((item, idx) => {
+      if (idx > 0) {
+        const sepSpan = document.createElement("span");
+        sepSpan.className = "rssticker-sep";
+        sepSpan.textContent = sep;
+        frag.appendChild(sepSpan);
+      }
+
+      const text = this._formatItemText(item, contentMode);
+      let el;
+      if (cfg.open_links !== false && item.link) {
+        el = document.createElement("a");
+        el.className = "rssticker-item-link";
+        el.href = item.link;
+        el.target = "_blank";
+        el.rel = "noopener noreferrer";
+      } else {
+        el = document.createElement("span");
+      }
+      if (item.color) {
+        el.style.color = item.color;
+      }
+      el.textContent = text;
+      frag.appendChild(el);
+    });
+    return frag;
   }
 
   _update(force) {
@@ -319,13 +364,17 @@ class RssTickerCard extends HTMLElement {
     }
 
     const sep = this._config.separator ?? "  •  ";
-    const text = items.map((i) => this._formatItem(i)).join(sep);
+    const contentMode = stateObj.attributes.content_mode;
+    const plainText = items.map((i) => this._formatItemText(i, contentMode)).join(sep);
+    const signature = `${entityId}|${plainText}|${items.map((i) => `${i.color || ""}:${i.link || ""}`).join(",")}`;
 
-    if (text !== this._lastRenderedText || force) {
-      this._lastRenderedText = text;
-      contentSpans.forEach((span) => (span.textContent = text));
+    if (signature !== this._lastRenderedSignature || force) {
+      this._lastRenderedSignature = signature;
+      contentSpans.forEach((span) => {
+        span.replaceChildren(this._buildItemsFragment(items, sep, contentMode));
+      });
 
-      const duration = Math.max(5, (text.length || 1) / (this._config.speed / 10));
+      const duration = Math.max(5, (plainText.length || 1) / (this._config.speed / 10));
       track.style.animationDuration = `${duration}s`;
       // Reinicia la animación para evitar saltos al cambiar de contenido
       track.style.animationName = "none";
@@ -336,13 +385,17 @@ class RssTickerCard extends HTMLElement {
   }
 }
 
-customElements.define("rssticker-card", RssTickerCard);
+if (!customElements.get("rssticker-card")) {
+  customElements.define("rssticker-card", RssTickerCard);
+}
 
 window.customCards = window.customCards || [];
-window.customCards.push({
-  type: "rssticker-card",
-  name: "RSS Ticker Card",
-  description:
-    "Muestra un ticker de noticias alimentado por la integración RSS Ticker (modo individual o MultiTicker).",
-  preview: false,
-});
+if (!window.customCards.some((c) => c.type === "rssticker-card")) {
+  window.customCards.push({
+    type: "rssticker-card",
+    name: "RSS Ticker Card",
+    description:
+      "Muestra un ticker de noticias alimentado por la integración RSS Ticker (modo individual o MultiTicker).",
+    preview: false,
+  });
+}

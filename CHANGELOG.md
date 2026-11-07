@@ -5,6 +5,22 @@ Todos los cambios notables de este proyecto se documentan en este archivo.
 El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/),
 y este proyecto sigue [Semantic Versioning](https://semver.org/lang/es/).
 
+## [1.0.0] - 2026-11-07
+
+### Agregado
+- **Sincronización dinámica de sensores**: agregar o eliminar tickers desde el Options Flow crea o remueve automáticamente las entidades `sensor` sin necesidad de recargar la integración.
+- **Actualización en caliente del intervalo de polling**: cambiar `update_interval` desde Ajustes Generales actualiza inmediatamente el `DataUpdateCoordinator`.
+- **Soporte de enlaces y colores por fuente en Lovelace Card**: las noticias ahora son clickeables (`open_links: true` por defecto) y respetan el color configurado en cada fuente RSS (`color`).
+- **Validación de URL** en el alta y edición de fuentes RSS en el Options Flow (`http://` / `https://`).
+- **Soporte de prioridad y orden de fuentes** al ordenar noticias (`priority` descendente y `order` ascendente antes de la fecha).
+- `rssticker.refresh_ticker` ahora acepta tanto el `ticker_id` interno como el nombre del ticker o su `entity_id`.
+
+### Corregido
+- Eliminadas las llamadas bloqueantes al sistema de archivos (`Path.exists()`, `Path.stat()`) en el event loop durante `_async_register_card`, ejecutándolas mediante `hass.async_add_executor_job`.
+- Evitada la mutación in-place de objetos `FeedItem` en caché al truncar títulos con `max_length`.
+- Corregida la descarga de servicios en `async_unload_entry` para que ignore banderas internas (`_card_registered`) al verificar si quedan instancias activas.
+- Ajustado `hacs.json` eliminando claves obsoletas (`content_in_root`, `zip_release`) para compatibilidad estricta con las validaciones de HACS.
+
 ## [0.1.2] - 2026-07-14
 
 ### Corregido

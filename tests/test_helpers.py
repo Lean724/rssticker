@@ -55,7 +55,16 @@ FeedItem = _helpers.FeedItem
 filter_and_sort_items = _helpers.filter_and_sort_items
 
 
-def _item(title, minutes_ago=0, guid=None, domain="example.com", category="", source="Fuente"):
+def _item(
+    title,
+    minutes_ago=0,
+    guid=None,
+    domain="example.com",
+    category="",
+    source="Fuente",
+    priority=0,
+    order=0,
+):
     return FeedItem(
         guid=guid or title,
         title=title,
@@ -68,6 +77,8 @@ def _item(title, minutes_ago=0, guid=None, domain="example.com", category="", so
         category=category,
         color=None,
         domain=domain,
+        priority=priority,
+        order=order,
     )
 
 
@@ -81,6 +92,20 @@ def test_sort_oldest_first():
     items = [_item("A", minutes_ago=10), _item("B", minutes_ago=1), _item("C", minutes_ago=5)]
     result = filter_and_sort_items(items, {"sort": "oldest", "dedup_by": "none"})
     assert [i.title for i in result] == ["A", "C", "B"]
+
+
+def test_sort_respects_priority_and_order():
+    items = [
+        _item("Normal nuevo", minutes_ago=1, priority=0, order=0),
+        _item("Prioritario viejo", minutes_ago=60, priority=10, order=2),
+        _item("Prioritario orden 1", minutes_ago=120, priority=10, order=1),
+    ]
+    result = filter_and_sort_items(items, {"sort": "newest", "dedup_by": "none"})
+    assert [i.title for i in result] == [
+        "Prioritario orden 1",
+        "Prioritario viejo",
+        "Normal nuevo",
+    ]
 
 
 def test_dedup_by_guid():
@@ -124,13 +149,15 @@ def test_max_items_limit():
     assert len(result) == 3
 
 
-def test_max_length_truncates_title():
-    items = [_item("Este es un título muy largo para el ticker")]
+def test_max_length_truncates_title_without_mutating_original():
+    original_title = "Este es un título muy largo para el ticker"
+    item = _item(original_title)
     result = filter_and_sort_items(
-        items, {"max_length": 10, "dedup_by": "none", "sort": "newest"}
+        [item], {"max_length": 10, "dedup_by": "none", "sort": "newest"}
     )
     assert len(result[0].title) == 10
     assert result[0].title.endswith("…")
+    assert item.title == original_title
 
 
 def test_max_items_and_max_length_accept_float():

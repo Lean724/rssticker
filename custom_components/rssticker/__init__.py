@@ -16,8 +16,10 @@ _LOGGER = logging.getLogger(__name__)
 
 CARD_DIR = Path(__file__).parent / "www"
 
+type RssTickerConfigEntry = ConfigEntry[RssTickerCoordinator]
 
-async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
+
+async def async_setup_entry(hass: HomeAssistant, entry: RssTickerConfigEntry) -> bool:
     """Configura RSS Ticker a partir de una entrada de configuración."""
     hass.data.setdefault(DOMAIN, {})
 
@@ -36,20 +38,38 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     return True
 
 
-async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
+async def async_unload_entry(hass: HomeAssistant, entry: RssTickerConfigEntry) -> bool:
     """Descarga una entrada de configuración."""
     unloaded = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
     if unloaded:
         hass.data[DOMAIN].pop(entry.entry_id, None)
-        if not hass.data[DOMAIN]:
+        remaining = [
+            v
+            for v in hass.data[DOMAIN].values()
+            if isinstance(v, RssTickerCoordinator)
+        ]
+        if not remaining:
             async_unload_services(hass)
     return unloaded
 
 
-async def _async_update_listener(hass: HomeAssistant, entry: ConfigEntry) -> None:
+async def _async_update_listener(
+    hass: HomeAssistant, entry: RssTickerConfigEntry
+) -> None:
     """Se llama cuando cambian las opciones (feeds/tickers) de la entrada."""
     coordinator: RssTickerCoordinator = entry.runtime_data
+    coordinator.update_polling_interval()
     await coordinator.async_request_refresh()
+
+
+def _check_card_dir() -> tuple[bool, str]:
+    """Verifica en un thread executor si existe el directorio de la tarjeta y su versión."""
+    if not CARD_DIR.exists():
+        return False, "1"
+    card_file = CARD_DIR / CARD_NAME
+    if card_file.exists():
+        return True, str(int(card_file.stat().st_mtime))
+    return True, "1"
 
 
 async def _async_register_card(hass: HomeAssistant) -> None:
@@ -61,7 +81,8 @@ async def _async_register_card(hass: HomeAssistant) -> None:
     if hass.data[DOMAIN].get("_card_registered"):
         return
 
-    if not CARD_DIR.exists():
+    exists, version = await hass.async_add_executor_job(_check_card_dir)
+    if not exists:
         _LOGGER.warning(
             "No se encontró el directorio de la tarjeta en %s; la Lovelace Card "
             "'rssticker-card' no estará disponible",
@@ -76,17 +97,9 @@ async def _async_register_card(hass: HomeAssistant) -> None:
     try:
         from homeassistant.components.frontend import add_extra_js_url
 
-        add_extra_js_url(hass, f"{CARD_URL}?v={_card_version()}")
+        add_extra_js_url(hass, f"{CARD_URL}?v={version}")
     except ImportError:  # pragma: no cover - defensivo, frontend siempre disponible
         _LOGGER.debug("No se pudo registrar la tarjeta automáticamente en Lovelace")
 
     hass.data[DOMAIN]["_card_registered"] = True
     _LOGGER.debug("Tarjeta %s registrada en %s", CARD_NAME, CARD_URL)
-
-
-def _card_version() -> str:
-    """Devuelve un identificador de versión del archivo de la tarjeta (cache-busting)."""
-    card_file = CARD_DIR / CARD_NAME
-    if card_file.exists():
-        return str(int(card_file.stat().st_mtime))
-    return "1"

@@ -17,6 +17,9 @@
     }
   },
   "options": {
+    "error": {
+      "invalid_url": "URL del feed inválida (debe comenzar con http:// o https://)."
+    },
     "step": {
       "init": {
         "title": "RSS Ticker",

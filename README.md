@@ -1,5 +1,9 @@
 # RSS Ticker para Home Assistant
 
+[![HACS Validation](https://github.com/Lean724/rssticker/actions/workflows/validate.yml/badge.svg)](https://github.com/Lean724/rssticker/actions/workflows/validate.yml)
+[![Lint & Test](https://github.com/Lean724/rssticker/actions/workflows/lint.yml/badge.svg)](https://github.com/Lean724/rssticker/actions/workflows/lint.yml)
+[![GitHub release](https://img.shields.io/github/v/release/Lean724/rssticker)](https://github.com/Lean724/rssticker/releases)
+
 Integración nativa de Home Assistant para mostrar uno o más *News Tickers* alimentados por fuentes **RSS 2.0, Atom o RDF**, con una Lovelace Card a medida. No depende de Docker, Node.js ni servicios externos: toda la lógica corre dentro de Home Assistant.
 
 ## Características
@@ -7,15 +11,18 @@ Integración nativa de Home Assistant para mostrar uno o más *News Tickers* ali
 - Configuración 100 % desde la UI (Config Flow + Options Flow), sin YAML.
 - Múltiples fuentes RSS con nombre, categoría, prioridad, orden, color y estado activo/inactivo.
 - Agrupá fuentes en **tickers**, cada uno con su propio título fijo, filtros, deduplicación y orden.
+- Sincronización dinámica de entidades: al crear o eliminar un ticker se agrega o remueve su sensor automáticamente.
 - Caché en memoria vía `DataUpdateCoordinator`: si un feed falla, se sigue mostrando el último contenido válido.
 - Filtros de inclusión/exclusión por palabra, dominio, categoría o fuente.
 - Deduplicación por GUID, título o URL.
 - Servicios (`refresh`, `refresh_ticker`, `clear_cache`) y eventos (`rssticker_updated`, `rssticker_error`).
-- Lovelace Card propia con modo individual y **MultiTicker** (secuencial o varias tarjetas simultáneas), con control de velocidad, dirección, tipografía, colores, separadores y más.
+- Lovelace Card propia con modo individual y **MultiTicker** (secuencial o varias tarjetas simultáneas), con enlaces clickeables, colores por fuente, control de velocidad, dirección, tipografía, separadores y más.
 
 ## Instalación
 
-### Vía HACS (repositorio custom)
+### Vía HACS (recomendado)
+
+[![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=Lean724&repository=rssticker&category=integration)
 
 1. En HACS, andá a **Integraciones** → menú (⋮) → **Repositorios personalizados**.
 2. Agregá `https://github.com/Lean724/rssticker` como tipo **Integración**.
@@ -50,12 +57,12 @@ Un ticker agrupa una o más fuentes RSS y define:
 
 - Título fijo (opcional, no se desplaza).
 - Contenido a mostrar (solo título / título + descripción / título + contenido).
-- Ordenamiento (más recientes, más antiguos, aleatorio).
+- Ordenamiento (más recientes, más antiguos, aleatorio), respetando prioridad y orden de cada fuente.
 - Deduplicación (por GUID, título, URL o ninguna).
 - Cantidad máxima de noticias y longitud máxima de título.
 - Filtros: incluir palabras, excluir palabras, excluir dominios, excluir categorías, excluir fuentes.
 
-Cada ticker se expone como un sensor, por ejemplo `sensor.rssticker_noticias`, con atributos `items`, `sources`, `status`, `errors` y `last_update`.
+Cada ticker se expone como un sensor, por ejemplo `sensor.rssticker_noticias`, con atributos `ticker_id`, `title`, `content_mode`, `items`, `sources`, `status`, `errors` y `last_update`.
 
 ## La tarjeta Lovelace
 
@@ -66,6 +73,7 @@ mode: single
 speed: 40
 direction: left
 pause_on_hover: true
+open_links: true
 show_source: true
 show_category: false
 show_description: false
@@ -104,7 +112,7 @@ Agregá varias tarjetas `custom:rssticker-card` al dashboard, cada una apuntando
 | Servicio | Descripción |
 |---|---|
 | `rssticker.refresh` | Actualiza todos los feeds de una entrada (o de todas si no se especifica `config_entry_id`). |
-| `rssticker.refresh_ticker` | Actualiza únicamente los feeds usados por el ticker indicado (`ticker_id`). |
+| `rssticker.refresh_ticker` | Actualiza únicamente los feeds usados por el ticker indicado (`ticker_id`, nombre o `entity_id`). |
 | `rssticker.clear_cache` | Vacía la caché en memoria y fuerza una nueva descarga completa. |
 
 ## Eventos
@@ -133,6 +141,7 @@ rssticker/
 │       ├── sensor.py
 │       ├── services.py
 │       ├── services.yaml
+│       ├── brand/
 │       ├── translations/
 │       ├── icons.json
 │       ├── strings.json
